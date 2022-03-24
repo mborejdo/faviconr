@@ -1,0 +1,10 @@
+{
+  "sizes": [
+    {"pixels": 16,  "format": "ico"},
+    {"pixels": 16,  "format": "jpg"},
+    {"pixels": 16,  "format": "png"},
+    {"pixels": 32,  "format": "jpg"},
+    {"pixels": 32,  "format": "png"}
+  ],
+  "text": "mb"
+}
