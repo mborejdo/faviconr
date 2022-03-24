@@ -1,3 +1,4 @@
+extern crate clap;
 extern crate image;
 extern crate imageproc;
 extern crate rusttype;
@@ -12,8 +13,37 @@ use std::env;
 use std::path::Path;
 use std::fs::File;
 use std::io::Read;
+use clap::{Command, Arg};
 
 pub fn main() {
+  let matches = Command::new("faviconr")
+    .author("Michael Borejdo")
+    .about("generates favicons")
+    .arg_required_else_help(false)
+    .arg( Arg::new("offset")
+            .help("horizontal offset")
+            .long("offset")
+            .short('o')
+            .takes_value(true)
+            .required(false))
+    .arg( Arg::new("scale")
+            .help("scale")
+            .long("scale")
+            .short('s')
+            .takes_value(true)
+            .required(false))
+    .arg( Arg::new("font")
+            .help("font")
+            .long("font")
+            .short('f')
+            .takes_value(true)
+            .required(false));
+
+
+  let matches = matches.get_matches();
+  if let Some(c) = matches.value_of("font") {
+      println!("Value for -font: {}", c);
+  }
 
   let conf_file = "src/conf.json";
   let icon_text = parse_json(conf_file, "text").to_string().replace("\"", "");
@@ -37,12 +67,11 @@ pub fn main() {
 
 }
 
-
 pub fn create_favicon(txt: &str, filepath: &str, dimensions: u32, meta: &str) {
-  let c1 = colorsys::Rgb::from_hex_str("#000000").unwrap_or(colorsys::Rgb::from((0.0, 0.0, 0.0)));
-  let c2 = colorsys::Rgb::from_hex_str("#ff0000").unwrap_or(colorsys::Rgb::from((0.0, 0.0, 0.0)));
-  let bg = Rgb([c1.red() as u8, c1.green() as u8, c1.blue() as u8]);
-  let fg = Rgb([c2.red() as u8, c2.green() as u8, c2.blue() as u8]);
+  let black = colorsys::Rgb::from_hex_str("#000000").unwrap_or(colorsys::Rgb::from((0.0, 0.0, 0.0)));
+  let white = colorsys::Rgb::from_hex_str("#ffffff").unwrap_or(colorsys::Rgb::from((255.0, 255.0, 255.0)));
+  let bg = Rgb([black.red() as u8, black.green() as u8, black.blue() as u8]);
+  let fg = Rgb([white.red() as u8, white.green() as u8, white.blue() as u8]);
 
   let font_offset = 1u32;
   let path = Path::new(filepath);
