@@ -26,15 +26,13 @@ pub fn main() {
             .takes_value(true)
             .required(false))
     .arg(Arg::new("offset")
-            .help("horizontal offset")
+            .help("offset")
             .long("offset")
-            .short('h')
             .takes_value(true)
             .required(false))
     .arg(Arg::new("scale")
             .help("scale")
             .long("scale")
-            .short('s')
             .takes_value(true)
             .required(false))
     .arg(Arg::new("output")
@@ -91,14 +89,12 @@ pub fn main() {
     _ =>
       0.8
   };
-  let offset: u32 = match matches.value_of("offset") {
+  let offset: f32 = match matches.value_of("offset") {
     Some(h_offset) => {
-      let dimensions = 16;
-      let percent_offset = h_offset.parse::<f32>().unwrap_or(0.00) / 100 as f32;
-      (percent_offset * dimensions as f32) as u32
+      h_offset.parse::<f32>().unwrap_or(80.0) / 100 as f32
     },
     _ =>
-      0
+      0.0
   };
   let bg: &str = match matches.value_of("bg") {
     Some(bg) => {
@@ -137,13 +133,13 @@ pub fn main() {
 
 }
 
-pub fn create_favicon(txt: &str, filepath: &str, dimensions: u32, fontfile: &str, scale: f32, offset: u32, fg: &str, bg: &str) {
+pub fn create_favicon(txt: &str, filepath: &str, dimensions: u32, fontfile: &str, scale: f32, offset: f32, fg: &str, bg: &str) {
   let black = colorsys::Rgb::from_hex_str(bg).unwrap_or(colorsys::Rgb::from((0.0, 0.0, 0.0)));
   let white = colorsys::Rgb::from_hex_str(fg).unwrap_or(colorsys::Rgb::from((255.0, 255.0, 255.0)));
   let bg = Rgb([black.red() as u8, black.green() as u8, black.blue() as u8]);
   let fg = Rgb([white.red() as u8, white.green() as u8, white.blue() as u8]);
 
-  let font_offset = 1u32;
+  let font_offset = 0u32;
   let path = Path::new(filepath);
   let mut image = RgbImage::new(dimensions, dimensions);
 
@@ -156,13 +152,13 @@ pub fn create_favicon(txt: &str, filepath: &str, dimensions: u32, fontfile: &str
   let font = Font::try_from_vec(std::fs::read(fontfile).unwrap()).unwrap();
   let horizontal_compression: f32 = scale;
   let vertical_compression = 0.8;
- 
+
   let scale = Scale {
     x: (dimensions as f32) * horizontal_compression,
     y: (dimensions as f32) * vertical_compression
   };
 
-  let horizontal_offset: u32 = offset;
+  let horizontal_offset: u32 = (offset * dimensions as f32) as u32;
   let vertical_offset = dimensions as f32 * 0.1;
 
   draw_text_mut(&mut image, fg, horizontal_offset, vertical_offset as u32, scale, &font, &txt.trim());
@@ -172,7 +168,6 @@ pub fn create_favicon(txt: &str, filepath: &str, dimensions: u32, fontfile: &str
 
 
 pub fn parse_json(filename: &str, key_name: &str) -> Value {
-  
   let path = Path::new(filename);
   let mut data = File::open(&path).unwrap();
   let mut contents = String::new();
