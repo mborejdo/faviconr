@@ -65,51 +65,45 @@ pub fn main() {
     Some(config) => {
       config
     },
-    _ =>
-      "./conf.json"
+    _ => "./conf.json"
   };
   let output: &str = match matches.value_of("output") {
     Some(output) => {
       output
     },
-    _ =>
-    "./"
+    _ => "./"
   };
   let fontfile: &str = match matches.value_of("font") {
     Some(font) => {
       font
     },
-    _ =>
-    "./assets/DejaVuSans.ttf"
+    _ => "./assets/DejaVuSans.ttf"
   };
   let scale: f32 = match matches.value_of("scale") {
     Some(scale) => {
       scale.parse::<f32>().unwrap_or(80.0) / 100 as f32
     },
-    _ =>
-      0.8
+    _ => 0.8
   };
   let offset: f32 = match matches.value_of("offset") {
     Some(h_offset) => {
       h_offset.parse::<f32>().unwrap_or(80.0) / 100 as f32
     },
-    _ =>
-      0.0
+    _ => 0.0
   };
   let bg: &str = match matches.value_of("bg") {
     Some(bg) => {
       bg
     },
-    _ =>
-    "#ff0000"
+    _ => "#ff0000"
   };
   let fg: &str = match matches.value_of("fg") {
     Some(fg) => {
       fg
     },
-    _ =>
-    "#00ff00"
+    _ => "#00ff00"
   };
+
   let icon_text = parse_json(conf_file, "text").to_string().replace("\"", "");
   let sizes     = parse_json(conf_file, "sizes");
 
@@ -130,14 +124,13 @@ pub fn main() {
       bg
     );
   }
-
 }
 
 pub fn create_favicon(txt: &str, filepath: &str, dimensions: u32, fontfile: &str, scale: f32, offset: f32, fg: &str, bg: &str) {
-  let black = colorsys::Rgb::from_hex_str(bg).unwrap_or(colorsys::Rgb::from((0.0, 0.0, 0.0)));
-  let white = colorsys::Rgb::from_hex_str(fg).unwrap_or(colorsys::Rgb::from((255.0, 255.0, 255.0)));
-  let bg = Rgb([black.red() as u8, black.green() as u8, black.blue() as u8]);
-  let fg = Rgb([white.red() as u8, white.green() as u8, white.blue() as u8]);
+  let color1 = colorsys::Rgb::from_hex_str(bg).unwrap_or(colorsys::Rgb::from((0.0, 0.0, 0.0)));
+  let color2 = colorsys::Rgb::from_hex_str(fg).unwrap_or(colorsys::Rgb::from((255.0, 255.0, 255.0)));
+  let bg = Rgb([color1.red() as u8, color1.green() as u8, color1.blue() as u8]);
+  let fg = Rgb([color2.red() as u8, color2.green() as u8, color2.blue() as u8]);
 
   let font_offset = 0u32;
   let path = Path::new(filepath);
