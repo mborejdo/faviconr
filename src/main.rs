@@ -9,7 +9,6 @@ use imageproc::rect::Rect;
 use image::{Rgb, RgbImage};
 use rusttype::{Font, Scale};
 use serde_json::Value;
-use std::env;
 use std::path::Path;
 use std::fs::File;
 use std::io::Read;
@@ -44,6 +43,16 @@ pub fn main() {
             .short('o')
             .takes_value(true)
             .required(false))
+    .arg(Arg::new("bg")
+            .help("bg")
+            .long("bg")
+            .takes_value(true)
+            .required(false))
+    .arg(Arg::new("fg")
+            .help("fg")
+            .long("fg")
+            .takes_value(true)
+            .required(false))
     .arg(Arg::new("font")
             .help("font")
             .long("font")
@@ -66,7 +75,7 @@ pub fn main() {
       output
     },
     _ =>
-    "./output/favicon{}.{}"
+    "./"
   };
   let fontfile: &str = match matches.value_of("font") {
     Some(font) => {
@@ -91,32 +100,46 @@ pub fn main() {
     _ =>
       0
   };
-
+  let bg: &str = match matches.value_of("bg") {
+    Some(bg) => {
+      bg
+    },
+    _ =>
+    "#ff0000"
+  };
+  let fg: &str = match matches.value_of("fg") {
+    Some(fg) => {
+      fg
+    },
+    _ =>
+    "#00ff00"
+  };
   let icon_text = parse_json(conf_file, "text").to_string().replace("\"", "");
   let sizes     = parse_json(conf_file, "sizes");
 
   for i in 0..100 {
     if sizes[i].is_null() { break; }
-    
+
     let img_size = sizes[i]["pixels"].to_string().parse::<u32>().unwrap();
     let img_format = sizes[i]["format"].to_string().replace("\"", "");
 
     create_favicon(
       &icon_text,
-      &format!("./favicon{}.{}", &img_size, &img_format),
+      &format!("{}favicon{}.{}", &output, &img_size, &img_format),
       img_size, 
       fontfile,
       scale, 
       offset,
-      output
+      fg,
+      bg
     );
   }
 
 }
 
-pub fn create_favicon(txt: &str, filepath: &str, dimensions: u32, fontfile: &str, scale: f32, offset: u32, output: &str) {
-  let black = colorsys::Rgb::from_hex_str("#000000").unwrap_or(colorsys::Rgb::from((0.0, 0.0, 0.0)));
-  let white = colorsys::Rgb::from_hex_str("#ffffff").unwrap_or(colorsys::Rgb::from((255.0, 255.0, 255.0)));
+pub fn create_favicon(txt: &str, filepath: &str, dimensions: u32, fontfile: &str, scale: f32, offset: u32, fg: &str, bg: &str) {
+  let black = colorsys::Rgb::from_hex_str(fg).unwrap_or(colorsys::Rgb::from((0.0, 0.0, 0.0)));
+  let white = colorsys::Rgb::from_hex_str(bg).unwrap_or(colorsys::Rgb::from((255.0, 255.0, 255.0)));
   let bg = Rgb([black.red() as u8, black.green() as u8, black.blue() as u8]);
   let fg = Rgb([white.red() as u8, white.green() as u8, white.blue() as u8]);
 
