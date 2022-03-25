@@ -59,7 +59,7 @@ pub fn main() {
       config
     },
     _ =>
-      "src/conf.json"
+      "./conf.json"
   };
   let output: &str = match matches.value_of("output") {
     Some(output) => {
@@ -73,7 +73,7 @@ pub fn main() {
       font
     },
     _ =>
-    "./src/assets/DejaVuSans.ttf"
+    "./assets/DejaVuSans.ttf"
   };
   let scale: f32 = match matches.value_of("scale") {
     Some(scale) => {
@@ -103,7 +103,7 @@ pub fn main() {
 
     create_favicon(
       &icon_text,
-      &format!("./output/favicon{}.{}", &img_size, &img_format),
+      &format!("./favicon{}.{}", &img_size, &img_format),
       img_size, 
       fontfile,
       scale, 
@@ -134,7 +134,6 @@ pub fn create_favicon(txt: &str, filepath: &str, dimensions: u32, fontfile: &str
   let horizontal_compression: f32 = scale;
   let vertical_compression = 0.8;
  
-
   let scale = Scale {
     x: (dimensions as f32) * horizontal_compression,
     y: (dimensions as f32) * vertical_compression
