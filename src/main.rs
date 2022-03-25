@@ -138,8 +138,8 @@ pub fn main() {
 }
 
 pub fn create_favicon(txt: &str, filepath: &str, dimensions: u32, fontfile: &str, scale: f32, offset: u32, fg: &str, bg: &str) {
-  let black = colorsys::Rgb::from_hex_str(fg).unwrap_or(colorsys::Rgb::from((0.0, 0.0, 0.0)));
-  let white = colorsys::Rgb::from_hex_str(bg).unwrap_or(colorsys::Rgb::from((255.0, 255.0, 255.0)));
+  let black = colorsys::Rgb::from_hex_str(bg).unwrap_or(colorsys::Rgb::from((0.0, 0.0, 0.0)));
+  let white = colorsys::Rgb::from_hex_str(fg).unwrap_or(colorsys::Rgb::from((255.0, 255.0, 255.0)));
   let bg = Rgb([black.red() as u8, black.green() as u8, black.blue() as u8]);
   let fg = Rgb([white.red() as u8, white.green() as u8, white.blue() as u8]);
 
