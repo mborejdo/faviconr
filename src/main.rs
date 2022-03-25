@@ -20,25 +20,31 @@ pub fn main() {
     .author("Michael Borejdo")
     .about("generates favicons")
     .arg_required_else_help(false)
-    .arg( Arg::new("config")
+    .arg(Arg::new("config")
             .help("config")
             .long("config")
             .short('c')
             .takes_value(true)
             .required(false))
-    .arg( Arg::new("offset")
+    .arg(Arg::new("offset")
             .help("horizontal offset")
             .long("offset")
-            .short('o')
+            .short('h')
             .takes_value(true)
             .required(false))
-    .arg( Arg::new("scale")
+    .arg(Arg::new("scale")
             .help("scale")
             .long("scale")
             .short('s')
             .takes_value(true)
             .required(false))
-    .arg( Arg::new("font")
+    .arg(Arg::new("output")
+            .help("output")
+            .long("output")
+            .short('o')
+            .takes_value(true)
+            .required(false))
+    .arg(Arg::new("font")
             .help("font")
             .long("font")
             .short('f')
@@ -48,14 +54,43 @@ pub fn main() {
 
   let matches = matches.get_matches();
  
-  let mut conf_file = "src/conf.json";
-  if let Some(configflag) = matches.value_of("config") {
-    conf_file = configflag;
-  }
-  let mut font = "";
-  if let Some(fontflag) = matches.value_of("font") {
-    font = fontflag;
-  }
+  let conf_file: &str = match matches.value_of("config") {
+    Some(config) => {
+      config
+    },
+    _ =>
+      "src/conf.json"
+  };
+  let output: &str = match matches.value_of("output") {
+    Some(output) => {
+      output
+    },
+    _ =>
+    "./output/favicon{}.{}"
+  };
+  let fontfile: &str = match matches.value_of("font") {
+    Some(font) => {
+      font
+    },
+    _ =>
+    "./src/assets/DejaVuSans.ttf"
+  };
+  let scale: f32 = match matches.value_of("scale") {
+    Some(scale) => {
+      scale.parse::<f32>().unwrap_or(80.0) / 100 as f32
+    },
+    _ =>
+      0.8
+  };
+  let offset: u32 = match matches.value_of("offset") {
+    Some(h_offset) => {
+      let dimensions = 16;
+      let percent_offset = h_offset.parse::<f32>().unwrap_or(0.00) / 100 as f32;
+      (percent_offset * dimensions as f32) as u32
+    },
+    _ =>
+      0
+  };
 
   let icon_text = parse_json(conf_file, "text").to_string().replace("\"", "");
   let sizes     = parse_json(conf_file, "sizes");
@@ -66,19 +101,20 @@ pub fn main() {
     let img_size = sizes[i]["pixels"].to_string().parse::<u32>().unwrap();
     let img_format = sizes[i]["format"].to_string().replace("\"", "");
 
-    let meta = "";
-
     create_favicon(
       &icon_text,
       &format!("./output/favicon{}.{}", &img_size, &img_format),
       img_size, 
-      meta
+      fontfile,
+      scale, 
+      offset,
+      output
     );
   }
 
 }
 
-pub fn create_favicon(txt: &str, filepath: &str, dimensions: u32, _meta: &str) {
+pub fn create_favicon(txt: &str, filepath: &str, dimensions: u32, fontfile: &str, scale: f32, offset: u32, output: &str) {
   let black = colorsys::Rgb::from_hex_str("#000000").unwrap_or(colorsys::Rgb::from((0.0, 0.0, 0.0)));
   let white = colorsys::Rgb::from_hex_str("#ffffff").unwrap_or(colorsys::Rgb::from((255.0, 255.0, 255.0)));
   let bg = Rgb([black.red() as u8, black.green() as u8, black.blue() as u8]);
@@ -94,17 +130,8 @@ pub fn create_favicon(txt: &str, filepath: &str, dimensions: u32, _meta: &str) {
     bg
   );
 
-  let font = Vec::from(include_bytes!("./assets/DejaVuSans.ttf") as &[u8]);
-  let font = Font::try_from_vec(font).unwrap();
-
-  // USE CLAP
-  let horizontal_compression: f32 = match env::args().nth(2) {
-    Some(h_compression) => {
-      h_compression.parse::<f32>().unwrap_or(80.0) / 100 as f32
-    },
-    _ =>
-      0.8
-  };
+  let font = Font::try_from_vec(std::fs::read(fontfile).unwrap()).unwrap();
+  let horizontal_compression: f32 = scale;
   let vertical_compression = 0.8;
  
 
@@ -113,15 +140,7 @@ pub fn create_favicon(txt: &str, filepath: &str, dimensions: u32, _meta: &str) {
     y: (dimensions as f32) * vertical_compression
   };
 
-  // USE CLAP
-  let horizontal_offset: u32 = match env::args().nth(1) {
-    Some(h_offset) => {
-      let percent_offset = h_offset.parse::<f32>().unwrap_or(0.00) / 100 as f32;
-      (percent_offset * dimensions as f32) as u32
-    },
-    _ =>
-      0
-  };
+  let horizontal_offset: u32 = offset;
   let vertical_offset = dimensions as f32 * 0.1;
 
   draw_text_mut(&mut image, fg, horizontal_offset, vertical_offset as u32, scale, &font, &txt.trim());
