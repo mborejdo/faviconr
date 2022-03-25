@@ -20,6 +20,12 @@ pub fn main() {
     .author("Michael Borejdo")
     .about("generates favicons")
     .arg_required_else_help(false)
+    .arg( Arg::new("config")
+            .help("config")
+            .long("config")
+            .short('c')
+            .takes_value(true)
+            .required(false))
     .arg( Arg::new("offset")
             .help("horizontal offset")
             .long("offset")
@@ -41,11 +47,16 @@ pub fn main() {
 
 
   let matches = matches.get_matches();
-  if let Some(c) = matches.value_of("font") {
-      println!("Value for -font: {}", c);
+ 
+  let mut conf_file = "src/conf.json";
+  if let Some(configflag) = matches.value_of("config") {
+    conf_file = configflag;
+  }
+  let mut font = "";
+  if let Some(fontflag) = matches.value_of("font") {
+    font = fontflag;
   }
 
-  let conf_file = "src/conf.json";
   let icon_text = parse_json(conf_file, "text").to_string().replace("\"", "");
   let sizes     = parse_json(conf_file, "sizes");
 
@@ -67,7 +78,7 @@ pub fn main() {
 
 }
 
-pub fn create_favicon(txt: &str, filepath: &str, dimensions: u32, meta: &str) {
+pub fn create_favicon(txt: &str, filepath: &str, dimensions: u32, _meta: &str) {
   let black = colorsys::Rgb::from_hex_str("#000000").unwrap_or(colorsys::Rgb::from((0.0, 0.0, 0.0)));
   let white = colorsys::Rgb::from_hex_str("#ffffff").unwrap_or(colorsys::Rgb::from((255.0, 255.0, 255.0)));
   let bg = Rgb([black.red() as u8, black.green() as u8, black.blue() as u8]);
@@ -124,7 +135,10 @@ pub fn parse_json(filename: &str, key_name: &str) -> Value {
   let path = Path::new(filename);
   let mut data = File::open(&path).unwrap();
   let mut contents = String::new();
-  data.read_to_string(&mut contents);
+  match data.read_to_string(&mut contents) {
+      Err(e) => println!("{:?}", e),
+      _ => ()
+  }
 
   let v: Value = serde_json::from_str(contents.as_str()).unwrap();
 
